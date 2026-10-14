@@ -1,0 +1,1949 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QualityControl — Сервис тайных покупателей и аудита качества</title>
+    <meta name="description" content="Зарабатывайте от 25 000 ₽ в месяц, оценивая популярные сервисы. Свободный график, аванс на покупки и выплаты в день проверки.">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ECFDF5',
+                            100: '#D1FAE5',
+                            200: '#A7F3D0',
+                            300: '#6EE7B7',
+                            400: '#34D399',
+                            500: '#10B981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065F46',
+                            900: '#064E3B',
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 12px 40px -12px rgba(15, 23, 42, 0.07)',
+                        'elevated': '0 24px 60px -15px rgba(15, 23, 42, 0.12)',
+                        'brand': '0 16px 36px -8px rgba(5, 150, 105, 0.4)',
+                        'brand-lg': '0 22px 48px -10px rgba(16, 185, 129, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+            overflow-x: hidden;
+        }
+
+        /* Архитектурная сетка на фоне */
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+        }
+
+        /* Hero Screen Keyframe Animations (Fail-safe, no scroll required) */
+        @keyframes heroFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(24px) scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .hero-anim {
+            opacity: 0;
+            animation: heroFadeIn 0.7s var(--ease-spring) forwards;
+        }
+
+        .anim-delay-100 { animation-delay: 0.08s; }
+        .anim-delay-200 { animation-delay: 0.16s; }
+        .anim-delay-300 { animation-delay: 0.24s; }
+        .anim-delay-400 { animation-delay: 0.32s; }
+
+        /* Плавающие 3D-уведомления и аврора-блобы */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+        }
+
+        @keyframes floatReverse {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(8px) rotate(-1deg); }
+        }
+
+        @keyframes auroraMove {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -25px) scale(1.08); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        @keyframes shimmerSweep {
+            0% { transform: translateX(-150%) skewX(-20deg); }
+            100% { transform: translateX(250%) skewX(-20deg); }
+        }
+
+        .animate-float-slow {
+            animation: floatSlow 5.5s ease-in-out infinite;
+        }
+
+        .animate-float-reverse {
+            animation: floatReverse 6.5s ease-in-out infinite;
+        }
+
+        .animate-aurora {
+            animation: auroraMove 14s ease-in-out infinite;
+        }
+
+        /* Блик на премиальных кнопках */
+        .btn-shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.35), transparent);
+            transform: translateX(-150%) skewX(-20deg);
+            animation: shimmerSweep 4.5s infinite;
+            pointer-events: none;
+        }
+
+        /* Scroll Reveal Animations with Fail-Safe Fallback */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.6s var(--ease-spring), transform 0.6s var(--ease-spring);
+            will-change: opacity, transform;
+        }
+
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Spotlight эффект слежения за курсором мыши на карточках */
+        .spotlight-card {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.35s var(--ease-spring), box-shadow 0.35s var(--ease-spring), border-color 0.35s ease;
+        }
+        .spotlight-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                rgba(16, 185, 129, 0.09),
+                transparent 45%
+            );
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .spotlight-card:hover::before {
+            opacity: 1;
+        }
+        .spotlight-card:hover {
+            transform: translateY(-5px);
+        }
+        .spotlight-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Infinite Marquee Animations */
+        @keyframes marqueeLeft {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @keyframes marqueeRight {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+        }
+
+        .marquee-track-left {
+            display: flex;
+            width: max-content;
+            animation: marqueeLeft 34s linear infinite;
+        }
+
+        .marquee-track-right {
+            display: flex;
+            width: max-content;
+            animation: marqueeRight 36s linear infinite;
+        }
+
+        .marquee-wrapper:hover .marquee-track-left,
+        .marquee-wrapper:hover .marquee-track-right {
+            animation-play-state: paused;
+        }
+
+        /* Кастомный ползунок калькулятора дохода */
+        input[type=range].income-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type=range].income-slider::-webkit-slider-runnable-track {
+            height: 10px;
+            border-radius: 999px;
+            background: #E2E8F0;
+        }
+        input[type=range].income-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 26px;
+            width: 26px;
+            border-radius: 50%;
+            background: #059669;
+            border: 4px solid #FFFFFF;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.45);
+            margin-top: -8px;
+            transition: transform 0.2s var(--ease-spring), background-color 0.2s ease;
+        }
+        input[type=range].income-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #10B981;
+        }
+
+        /* Скрытие скроллбара карусели и плавный FAQ */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- 1. ШАПКА (HEADER) -->
+    <header id="main-header" class="fixed w-full top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+            <!-- Логотип + Live индикатор -->
+            <div class="flex items-center gap-4">
+                <a href="#" class="flex items-center gap-3 group focus:outline-none">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-md shadow-brand-600/30 group-hover:scale-105 group-hover:rotate-3 transition-all duration-300">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <span class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+                        Quality<span class="text-brand-600">Control</span>
+                    </span>
+                </a>
+
+                <!-- Живой статус-бейдж в шапке (только на широких экранах) -->
+                <div class="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50/90 border border-emerald-200/70 text-emerald-700 text-xs font-semibold">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span>Свободно 148 заданий по РФ</span>
+                </div>
+            </div>
+
+            <!-- Быстрая навигация по секциям -->
+            <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-600">
+                <a href="#calculator" class="hover:text-brand-600 transition-colors">Калькулятор дохода</a>
+                <a href="#directions" class="hover:text-brand-600 transition-colors">Направления</a>
+                <a href="#steps" class="hover:text-brand-600 transition-colors">Как это работает</a>
+                <a href="#reviews" class="hover:text-brand-600 transition-colors">Отзывы</a>
+                <a href="#faq" class="hover:text-brand-600 transition-colors">Вопросы</a>
+            </nav>
+
+            <!-- Контакты и CTA справа -->
+            <div class="flex items-center gap-3 sm:gap-5">
+                <a href="tel:+79064938762" class="hidden md:flex items-center gap-2.5 text-sm font-bold text-slate-700 hover:text-brand-600 transition-all py-2 px-3.5 rounded-xl hover:bg-slate-100/80">
+                    <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                    </span>
+                    <span>8 (906) 493-87-62</span>
+                </a>
+
+                <!-- Иконка телефона для мобильных -->
+                <a href="tel:+79064938762" aria-label="Позвонить" class="md:hidden w-10 h-10 rounded-full bg-slate-100 text-slate-700 hover:bg-brand-50 hover:text-brand-600 flex items-center justify-center transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                </a>
+
+                <a href="#cta" class="btn-shimmer inline-flex items-center justify-center px-5 py-2.5 sm:px-6 sm:py-3 rounded-full text-sm font-bold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 shadow-md shadow-brand-600/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+                    Начать работу
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. ГЛАВНЫЙ ЭКРАН (HERO С 3D-ИНТЕРАКТИВНЫМ ДАШБОРДОМ) -->
+    <section class="relative pt-28 pb-20 sm:pt-36 sm:pb-28 overflow-hidden bg-grid-pattern">
+        <!-- Анимированные Aurora-пятна -->
+        <div class="pointer-events-none absolute top-8 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[500px] flex justify-between opacity-75 -z-10">
+            <div class="w-80 h-80 sm:w-[440px] sm:h-[440px] rounded-full bg-brand-300/40 filter blur-3xl animate-aurora"></div>
+            <div class="w-80 h-80 sm:w-[420px] sm:h-[420px] rounded-full bg-sky-300/35 filter blur-3xl mt-16 animate-aurora" style="animation-delay: -5s;"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+                
+                <!-- Левая колонка: Оффер и триггеры -->
+                <div class="lg:col-span-7 text-center lg:text-left">
+                    <!-- Плашка-бейдж -->
+                    <div class="hero-anim inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-brand-200/90 text-brand-700 text-xs sm:text-sm font-bold mb-6 shadow-sm">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500"></span>
+                        </span>
+                        <span>Открыт набор тайных покупателей • Выплаты по СБП</span>
+                    </div>
+
+                    <!-- Заголовок H1 -->
+                    <h1 class="hero-anim anim-delay-100 text-3xl sm:text-5xl xl:text-[56px] font-black text-slate-900 tracking-tight leading-[1.1] mb-6">
+                        Зарабатывайте <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-emerald-500 to-teal-500">от 25 000 ₽ в месяц</span>, оценивая популярные сервисы
+                    </h1>
+
+                    <!-- Подзаголовок -->
+                    <p class="hero-anim anim-delay-200 text-base sm:text-xl text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed mb-8">
+                        Свободный график без привязки к офису, фиксированная оплата <strong class="font-bold text-slate-900">от 500 ₽ до 5 000 ₽</strong> за каждое задание и 100% аванс на все контрольные покупки.
+                    </p>
+
+                    <!-- Кнопки CTA -->
+                    <div class="hero-anim anim-delay-300 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                        <a href="#cta" class="btn-shimmer group w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-base sm:text-lg font-extrabold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+                            <span>Получить тестовое задание</span>
+                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                        </a>
+                        <a href="#calculator" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-base font-bold text-slate-700 bg-white/90 hover:bg-white border border-slate-200/90 hover:border-brand-300 shadow-sm hover:-translate-y-0.5 transition-all duration-200">
+                            <svg class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            <span>Рассчитать доход</span>
+                        </a>
+                    </div>
+
+                    <div class="hero-anim anim-delay-300 mt-4 flex items-center justify-center lg:justify-start gap-2 text-xs sm:text-sm font-medium text-slate-500">
+                        <svg class="w-4 h-4 text-brand-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Опыт работы не требуется • Персональный куратор в Telegram</span>
+                    </div>
+
+                    <!-- Мини-индикаторы доверия под Hero -->
+                    <div class="hero-anim anim-delay-400 mt-10 pt-8 border-t border-slate-200/80 grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0">
+                        <div>
+                            <div class="text-xl sm:text-2xl font-black text-slate-900">1–2 часа</div>
+                            <div class="text-xs text-slate-500 mt-0.5">выплата на карту</div>
+                        </div>
+                        <div class="border-x border-slate-200/80 px-3">
+                            <div class="text-xl sm:text-2xl font-black text-brand-600">0 ₽</div>
+                            <div class="text-xs text-slate-500 mt-0.5">своих вложений</div>
+                        </div>
+                        <div>
+                            <div class="text-xl sm:text-2xl font-black text-slate-900">15 мин</div>
+                            <div class="text-xs text-slate-500 mt-0.5">средний визит</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правая колонка: Интерактивный 3D-виджет кабинета исполнителя -->
+                <div class="lg:col-span-5 hero-anim anim-delay-200 relative">
+                    <div id="hero-tilt-card" class="relative mx-auto max-w-md transition-transform duration-200 ease-out" style="transform-style: preserve-3d;">
+                        
+                        <!-- Плавающее уведомление 1 (Сверху слева) -->
+                        <div class="animate-float-slow hidden sm:flex absolute -left-8 -top-6 z-20 items-center gap-3 px-4 py-3 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-100 shadow-elevated">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                                ₽
+                            </div>
+                            <div>
+                                <div class="text-[11px] font-semibold text-slate-400">Пополнение по СБП • Сейчас</div>
+                                <div class="text-sm font-extrabold text-slate-900">+ 650 ₽ <span class="text-xs font-semibold text-emerald-600">Зачислено</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Плавающее уведомление 2 (Снизу справа) -->
+                        <div class="animate-float-reverse hidden sm:flex absolute -right-6 -bottom-6 z-20 items-center gap-3 px-4 py-3 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-elevated">
+                            <div class="w-9 h-9 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-[11px] text-slate-400">Аванс на закупку</div>
+                                <div class="text-xs font-bold text-white">Переведено 400 ₽ до визита</div>
+                            </div>
+                        </div>
+
+                        <!-- Основная карточка интерактивного чек-листа -->
+                        <div class="bg-white/95 backdrop-blur-xl rounded-[2rem] p-6 sm:p-7 border border-slate-200/80 shadow-elevated relative overflow-hidden">
+                            <!-- Верхняя шапка виджета -->
+                            <div class="flex items-center justify-between pb-5 mb-5 border-b border-slate-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-sm">
+                                        OZ
+                                    </div>
+                                    <div>
+                                        <span class="text-[11px] font-bold uppercase tracking-wider text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md">Активное задание</span>
+                                        <h3 class="text-base font-extrabold text-slate-900 mt-0.5">Проверка ПВЗ Ozon</h3>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xs text-slate-400">Гонорар</div>
+                                    <div class="text-lg font-black text-brand-600">600 ₽</div>
+                                </div>
+                            </div>
+
+                            <!-- Интерактивный мини чек-лист (пользователь может кликать!) -->
+                            <div class="mb-5">
+                                <div class="flex items-center justify-between text-xs font-bold text-slate-500 mb-3">
+                                    <span>ИНТЕРАКТИВНЫЙ ЧЕК-ЛИСТ (ПОПРОБУЙТЕ НАЖАТЬ):</span>
+                                    <span id="demo-progress-text" class="text-brand-600">2 из 3</span>
+                                </div>
+                                <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden mb-4">
+                                    <div id="demo-progress-bar" class="h-full bg-gradient-to-r from-brand-500 to-emerald-400 rounded-full transition-all duration-300" style="width: 66%;"></div>
+                                </div>
+
+                                <div class="space-y-2.5" id="demo-checklist">
+                                    <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-brand-50/40 border border-slate-200/70 cursor-pointer transition-all select-none">
+                                        <input type="checkbox" checked class="demo-check w-5 h-5 rounded-md accent-emerald-600 cursor-pointer">
+                                        <span class="text-xs sm:text-sm font-semibold text-slate-700">Вывеска и входная группа чистые</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-brand-50/40 border border-slate-200/70 cursor-pointer transition-all select-none">
+                                        <input type="checkbox" checked class="demo-check w-5 h-5 rounded-md accent-emerald-600 cursor-pointer">
+                                        <span class="text-xs sm:text-sm font-semibold text-slate-700">Сотрудник поздоровался при входе</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-3 rounded-xl bg-brand-50/50 hover:bg-brand-50 border border-brand-200 cursor-pointer transition-all select-none">
+                                        <input type="checkbox" class="demo-check w-5 h-5 rounded-md accent-emerald-600 cursor-pointer">
+                                        <span class="text-xs sm:text-sm font-semibold text-slate-800">Заказ выдан быстрее чем за 3 минуты</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Нижняя панель статуса в виджете -->
+                            <div class="p-4 rounded-2xl bg-slate-900 text-white flex items-center justify-between">
+                                <div>
+                                    <div class="text-[11px] text-slate-400">Выплачено за 2 недели</div>
+                                    <div id="demo-balance" class="text-xl font-black text-emerald-400 transition-all">12 400 ₽</div>
+                                </div>
+                                <a href="#cta" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-extrabold text-xs transition-colors">
+                                    Взять задание →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. БЛОК ПАРТНЕРОВ (БЕГУЩАЯ СТРОКА / MARQUEE) -->
+    <section class="py-10 bg-white border-y border-slate-100 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 text-center">
+            <p class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-slate-400">
+                НАМ ДОВЕРЯЮТ КОНТРОЛЬ КАЧЕСТВА:
+            </p>
+        </div>
+
+        <div class="relative marquee-wrapper space-y-4">
+            <!-- Градиентные маски по краям -->
+            <div class="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-36 bg-gradient-to-r from-white to-transparent z-10"></div>
+            <div class="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-36 bg-gradient-to-l from-white to-transparent z-10"></div>
+
+            <!-- Линия 1 (движение влево) -->
+            <div class="flex overflow-hidden">
+                <div class="marquee-track-left flex items-center gap-4 sm:gap-6 py-1">
+                    <!-- Набор 1 -->
+                    <div class="flex items-center gap-4 sm:gap-6 shrink-0">
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-red-200 hover:bg-red-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-red-500 text-white font-bold text-xs flex items-center justify-center">Я</span>
+                            <span class="font-bold text-slate-800">Яндекс</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-blue-200 hover:bg-blue-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">O</span>
+                            <span class="font-bold text-slate-800 tracking-wide">OZON</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-fuchsia-200 hover:bg-fuchsia-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-gradient-to-br from-fuchsia-600 to-purple-700 text-white font-bold text-[10px] flex items-center justify-center">WB</span>
+                            <span class="font-bold text-slate-800">Wildberries</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-emerald-200 hover:bg-emerald-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-emerald-500 text-white font-bold text-xs flex items-center justify-center">С</span>
+                            <span class="font-bold text-slate-800">Сбербанк</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-sky-200 hover:bg-sky-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-sky-700 text-white font-bold text-[10px] flex items-center justify-center">ВТБ</span>
+                            <span class="font-bold text-slate-800">ВТБ</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-red-200 hover:bg-red-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-red-600 text-white font-bold text-xs flex items-center justify-center">А</span>
+                            <span class="font-bold text-slate-800">Альфа-Банк</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-rose-200 hover:bg-rose-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-rose-700 text-white font-bold text-xs flex items-center justify-center">Ф</span>
+                            <span class="font-bold text-slate-800">Фора-Банк</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-teal-200 hover:bg-teal-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-teal-600 text-white font-bold text-[10px] flex items-center justify-center">АБ</span>
+                            <span class="font-bold text-slate-800">Ак Барс</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-amber-200 hover:bg-amber-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-yellow-400 text-slate-900 font-extrabold text-xs flex items-center justify-center">Т</span>
+                            <span class="font-bold text-slate-800">Т-Банк</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 sm:gap-6 shrink-0" aria-hidden="true">
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-red-200 hover:bg-red-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-red-500 text-white font-bold text-xs flex items-center justify-center">Я</span>
+                            <span class="font-bold text-slate-800">Яндекс</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-blue-200 hover:bg-blue-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">O</span>
+                            <span class="font-bold text-slate-800 tracking-wide">OZON</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-fuchsia-200 hover:bg-fuchsia-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-gradient-to-br from-fuchsia-600 to-purple-700 text-white font-bold text-[10px] flex items-center justify-center">WB</span>
+                            <span class="font-bold text-slate-800">Wildberries</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-emerald-200 hover:bg-emerald-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-emerald-500 text-white font-bold text-xs flex items-center justify-center">С</span>
+                            <span class="font-bold text-slate-800">Сбербанк</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-sky-200 hover:bg-sky-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-sky-700 text-white font-bold text-[10px] flex items-center justify-center">ВТБ</span>
+                            <span class="font-bold text-slate-800">ВТБ</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-red-200 hover:bg-red-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-red-600 text-white font-bold text-xs flex items-center justify-center">А</span>
+                            <span class="font-bold text-slate-800">Альфа-Банк</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-rose-200 hover:bg-rose-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-rose-700 text-white font-bold text-xs flex items-center justify-center">Ф</span>
+                            <span class="font-bold text-slate-800">Фора-Банк</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-teal-200 hover:bg-teal-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-teal-600 text-white font-bold text-[10px] flex items-center justify-center">АБ</span>
+                            <span class="font-bold text-slate-800">Ак Барс</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-amber-200 hover:bg-amber-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-yellow-400 text-slate-900 font-extrabold text-xs flex items-center justify-center">Т</span>
+                            <span class="font-bold text-slate-800">Т-Банк</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Линия 2 (движение вправо) -->
+            <div class="flex overflow-hidden">
+                <div class="marquee-track-right flex items-center gap-4 sm:gap-6 py-1">
+                    <!-- Набор 1 -->
+                    <div class="flex items-center gap-4 sm:gap-6 shrink-0">
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-green-200 hover:bg-green-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-green-600 text-white font-bold text-[10px] flex items-center justify-center">X5</span>
+                            <span class="font-bold text-slate-800">X5 Group</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-emerald-200 hover:bg-emerald-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center">ВВ</span>
+                            <span class="font-bold text-slate-800">ВкусВилл</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-red-200 hover:bg-red-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-red-600 text-white font-bold text-xs flex items-center justify-center">М</span>
+                            <span class="font-bold text-slate-800">Магнит</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-lime-200 hover:bg-lime-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-lime-500 text-white font-bold text-xs flex items-center justify-center">К</span>
+                            <span class="font-bold text-slate-800">Купер</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-pink-200 hover:bg-pink-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-pink-500 text-white font-bold text-xs flex items-center justify-center">С</span>
+                            <span class="font-bold text-slate-800">Самокат</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-orange-200 hover:bg-orange-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-orange-500 text-white font-bold text-xs flex items-center justify-center">Д</span>
+                            <span class="font-bold text-slate-800">Додо Пицца</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-yellow-300 hover:bg-yellow-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-yellow-400 text-slate-900 font-bold text-xs flex items-center justify-center">Е</span>
+                            <span class="font-bold text-slate-800">Яндекс Еда</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-blue-200 hover:bg-blue-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-blue-800 text-yellow-300 font-bold text-xs flex items-center justify-center">Л</span>
+                            <span class="font-bold text-slate-800">Лента</span>
+                        </div>
+                    </div>
+                    <!-- Набор 2 для бесшовности -->
+                    <div class="flex items-center gap-4 sm:gap-6 shrink-0" aria-hidden="true">
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-green-200 hover:bg-green-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-green-600 text-white font-bold text-[10px] flex items-center justify-center">X5</span>
+                            <span class="font-bold text-slate-800">X5 Group</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-emerald-200 hover:bg-emerald-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center">ВВ</span>
+                            <span class="font-bold text-slate-800">ВкусВилл</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-red-200 hover:bg-red-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-red-600 text-white font-bold text-xs flex items-center justify-center">М</span>
+                            <span class="font-bold text-slate-800">Магнит</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-lime-200 hover:bg-lime-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-lime-500 text-white font-bold text-xs flex items-center justify-center">К</span>
+                            <span class="font-bold text-slate-800">Купер</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-pink-200 hover:bg-pink-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-pink-500 text-white font-bold text-xs flex items-center justify-center">С</span>
+                            <span class="font-bold text-slate-800">Самокат</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-orange-200 hover:bg-orange-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-orange-500 text-white font-bold text-xs flex items-center justify-center">Д</span>
+                            <span class="font-bold text-slate-800">Додо Пицца</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-yellow-300 hover:bg-yellow-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-yellow-400 text-slate-900 font-bold text-xs flex items-center justify-center">Е</span>
+                            <span class="font-bold text-slate-800">Яндекс Еда</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/70 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-blue-200 hover:bg-blue-50/40 hover:scale-105 transition-all duration-300 cursor-default">
+                            <span class="w-6 h-6 rounded-full bg-blue-800 text-yellow-300 font-bold text-xs flex items-center justify-center">Л</span>
+                            <span class="font-bold text-slate-800">Лента</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ИНТЕРАКТИВНЫЙ КАЛЬКУЛЯТОР ДОХОДА (НОВАЯ ФИЧА ДЛЯ ДОРОГОГО ОЩУЩЕНИЯ) -->
+    <section id="calculator" class="py-20 sm:py-24 relative overflow-hidden">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center fade-in-up mb-12">
+                <span class="text-xs font-extrabold uppercase tracking-widest text-brand-600 bg-brand-50 border border-brand-200/60 px-3.5 py-1.5 rounded-full">Интерактивный расчет</span>
+                <h2 class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    Посчитайте, сколько вы сможете зарабатывать
+                </h2>
+                <p class="mt-3 text-base sm:text-lg text-slate-600">
+                    Выберите удобное направление и количество проверок в неделю
+                </p>
+            </div>
+
+            <div class="bg-white rounded-[2rem] p-6 sm:p-10 border border-slate-200/80 shadow-elevated grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center fade-in-up">
+                <!-- Настройки калькулятора -->
+                <div class="lg:col-span-7 space-y-7">
+                    <div>
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-3">
+                            1. Выберите любимую категорию заданий:
+                        </label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="calc-categories">
+                            <button type="button" data-rate="1200" data-bonus="Бесплатные заказы" class="calc-cat-btn active px-3.5 py-3 rounded-2xl border-2 border-brand-600 bg-brand-50/70 text-brand-800 font-bold text-xs sm:text-sm text-left transition-all">
+                                <div class="text-base mb-1">📦</div>
+                                <div>Маркетплейсы</div>
+                                <div class="text-[11px] text-brand-600 font-semibold mt-0.5">~1 200 ₽ / визит</div>
+                            </button>
+                            <button type="button" data-rate="1250" data-bonus="+ продукты в подарок" class="calc-cat-btn px-3.5 py-3 rounded-2xl border-2 border-slate-200/80 hover:border-brand-200 bg-white text-slate-700 font-bold text-xs sm:text-sm text-left transition-all">
+                                <div class="text-base mb-1">🛒</div>
+                                <div>Супермаркеты</div>
+                                <div class="text-[11px] text-slate-400 font-semibold mt-0.5">~1 250 ₽ / визит</div>
+                            </button>
+                            <button type="button" data-rate="1150" data-bonus="+ готовая еда за наш счет" class="calc-cat-btn px-3.5 py-3 rounded-2xl border-2 border-slate-200/80 hover:border-brand-200 bg-white text-slate-700 font-bold text-xs sm:text-sm text-left transition-all">
+                                <div class="text-base mb-1">🍕</div>
+                                <div>Доставка еды</div>
+                                <div class="text-[11px] text-slate-400 font-semibold mt-0.5">~1 150 ₽ / заказ</div>
+                            </button>
+                            <button type="button" data-rate="1750" data-bonus="Максимальная ставка" class="calc-cat-btn px-3.5 py-3 rounded-2xl border-2 border-slate-200/80 hover:border-brand-200 bg-white text-slate-700 font-bold text-xs sm:text-sm text-left transition-all">
+                                <div class="text-base mb-1">💳</div>
+                                <div>Финсервисы</div>
+                                <div class="text-[11px] text-slate-400 font-semibold mt-0.5">~1 750 ₽ / аудит</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Ползунок количества проверок -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <label for="audits-range" class="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                                2. Количество проверок в неделю:
+                            </label>
+                            <span class="px-3.5 py-1 rounded-xl bg-brand-50 text-brand-700 font-black text-base" id="audits-count-label">
+                                5 проверок
+                            </span>
+                        </div>
+                        <input
+                            type="range"
+                            id="audits-range"
+                            min="1"
+                            max="10"
+                            value="5"
+                            class="w-full income-slider"
+                        >
+                        <div class="flex justify-between text-xs font-medium text-slate-400 mt-2">
+                            <span>1 проверка (30 мин)</span>
+                            <span>5 проверок</span>
+                            <span>10 проверок</span>
+                        </div>
+                    </div>
+
+                    <!-- Пояснение по времени -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100 text-xs sm:text-sm text-slate-600">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+                            <span>Занятость: <strong id="calc-hours" class="text-slate-900">~1.8 ч. в неделю</strong></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+                            <span>Бонус: <strong id="calc-bonus-label" class="text-slate-900">Бесплатные заказы</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Табло результата -->
+                <div class="lg:col-span-5 bg-slate-900 rounded-3xl p-7 sm:p-8 text-white relative overflow-hidden">
+                    <div class="pointer-events-none absolute -right-12 -top-12 w-48 h-48 rounded-full bg-brand-500/25 filter blur-2xl"></div>
+                    <div class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">Ваш ориентировочный доход</div>
+                    <div class="text-4xl sm:text-5xl font-black tracking-tight text-white mb-2" id="calc-total-Display">
+                        24 000 ₽ <span class="text-base font-medium text-slate-400">/ мес</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6">
+                        Чистыми на вашу карту СБП + полная предоплата всех чеков со стороны платформы.
+                    </p>
+                    <a href="#cta" class="btn-shimmer w-full py-4 px-6 rounded-2xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg transition-all">
+                        <span>Зафиксировать ставку и начать</span>
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. О КОМПАНИИ (ЦИФРЫ И ФАКТЫ СО SPOTLIGHT-ПОДСВЕТКОЙ) -->
+    <section class="py-20 sm:py-24 bg-white border-t border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center fade-in-up mb-14">
+                <span class="text-xs font-extrabold uppercase tracking-widest text-brand-600 bg-brand-50 px-3.5 py-1.5 rounded-full">О платформе</span>
+                <h2 class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    Надежный партнер для вас и бизнеса
+                </h2>
+                <p class="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
+                    Мы выступаем связующим звеном между крупнейшими торговыми сетями и реальными покупателями. Компании платят нам за объективный взгляд со стороны, а мы передаем эти задания вам — с понятными инструкциями, полным бюджетом на покупку и быстрой оплатой труда.
+                </p>
+            </div>
+
+            <!-- Сетка карточек с показателями -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 fade-in-up">
+                <div class="spotlight-card bg-slate-50/70 rounded-3xl p-7 border border-slate-200/70 shadow-soft hover:border-brand-300">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center mb-5 shadow-md shadow-brand-600/25">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">5+ лет</div>
+                    <p class="mt-2 text-sm text-slate-600 leading-relaxed">Успешной работы в сфере независимого клиентского аудита по всей России</p>
+                </div>
+
+                <div class="spotlight-card bg-slate-50/70 rounded-3xl p-7 border border-slate-200/70 shadow-soft hover:border-brand-300">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center mb-5 shadow-md shadow-brand-600/25">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">500+</div>
+                    <p class="mt-2 text-sm text-slate-600 leading-relaxed">Активных исполнителей регулярно берут задания в удобных для себя районах</p>
+                </div>
+
+                <div class="spotlight-card bg-slate-50/70 rounded-3xl p-7 border border-slate-200/70 shadow-soft hover:border-brand-300">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center mb-5 shadow-md shadow-brand-600/25">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">100 тыс.+</div>
+                    <p class="mt-2 text-sm text-slate-600 leading-relaxed">Проверенных торговых точек, ПВЗ, отделений банков и доставок</p>
+                </div>
+
+                <div class="spotlight-card bg-slate-50/70 rounded-3xl p-7 border border-slate-200/70 shadow-soft hover:border-brand-300">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center mb-5 shadow-md shadow-brand-600/25">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <div class="text-3xl sm:text-4xl font-black text-brand-600 tracking-tight">24/7</div>
+                    <p class="mt-2 text-sm text-slate-600 leading-relaxed">Оперативная поддержка персональных кураторов в Telegram на каждом шаге</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. ПРЕИМУЩЕСТВА СЕРВИСА -->
+    <section class="py-20 bg-slate-50 border-y border-slate-200/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center fade-in-up mb-14">
+                <span class="text-xs font-extrabold uppercase tracking-widest text-brand-600 bg-brand-50 px-3.5 py-1.5 rounded-full">Почему выбирают нас</span>
+                <h2 class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    Прозрачные условия для каждого исполнителя
+                </h2>
+                <p class="mt-3 text-base sm:text-lg text-slate-600">
+                    Никаких сложных анкет на 20 страниц и ожидания выплат в конце месяца
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 fade-in-up">
+                <!-- Карточка 1 -->
+                <div class="spotlight-card p-7 rounded-3xl bg-white border border-slate-200/70 shadow-soft hover:border-brand-300">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-slate-900 mb-2.5">Оплата за каждое задание</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Перевод вознаграждения на карту любого банка РФ сразу после быстрой модерации вашего отчета.
+                    </p>
+                </div>
+
+                <!-- Карточка 2 -->
+                <div class="spotlight-card p-7 rounded-3xl bg-white border border-slate-200/70 shadow-soft hover:border-brand-300">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-slate-900 mb-2.5">Свободный график</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Возможность брать проверки по пути домой, во время прогулки или в выходные. Вы сами выбираете локации.
+                    </p>
+                </div>
+
+                <!-- Карточка 3 -->
+                <div class="spotlight-card p-7 rounded-3xl bg-white border border-slate-200/70 shadow-soft hover:border-brand-300">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-slate-900 mb-2.5">Аванс на покупки</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Деньги на тестовую корзину выдаются до старта проверки. Все купленные товары и продукты остаются у вас.
+                    </p>
+                </div>
+
+                <!-- Карточка 4 -->
+                <div class="spotlight-card p-7 rounded-3xl bg-white border border-slate-200/70 shadow-soft hover:border-brand-300">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-slate-900 mb-2.5">Простые отчеты</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Удобные чек-листы на 5–10 минут прямо с телефона: пара фотографий и ответы на готовые вопросы.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. НАПРАВЛЕНИЯ ПРОВЕРОК (СФЕРЫ АУДИТА) -->
+    <section id="directions" class="py-20 sm:py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center fade-in-up mb-14">
+                <span class="text-xs font-extrabold uppercase tracking-widest text-brand-600 bg-brand-50 px-3.5 py-1.5 rounded-full">Сферы аудита</span>
+                <h2 class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    Направления проверок
+                </h2>
+                <p class="mt-3 text-base sm:text-lg text-slate-600">
+                    Вы можете комбинировать задания из разных категорий или выбрать любимое направление
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 fade-in-up">
+                <!-- 1. Маркетплейсы -->
+                <div class="spotlight-card bg-slate-50/60 rounded-3xl p-7 sm:p-8 border border-slate-200/80 shadow-soft flex flex-col justify-between hover:border-brand-300">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                            </div>
+                            <span class="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-brand-50 text-brand-700 border border-brand-200/60">от 600 до 1 500 ₽ за визит</span>
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900 mb-2">
+                            Маркетплейсы <span class="text-slate-400 font-medium text-base">(WB, Ozon, Яндекс Маркет)</span>
+                        </h3>
+                        <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                            Оценка чистоты и освещения в ПВЗ, скорости выдачи заказа, вежливости сотрудника, наличия пакетов и целостности упаковок при выдаче.
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-200/60 flex flex-wrap gap-2">
+                        <span class="text-xs font-semibold px-3 py-1 rounded-lg bg-white border border-slate-200/70 text-slate-600">⏱ 10–15 минут</span>
+                        <span class="text-xs font-semibold px-3 py-1 rounded-lg bg-white border border-slate-200/70 text-slate-600">✨ Без сложных диалогов</span>
+                    </div>
+                </div>
+
+                <!-- 2. Супермаркеты -->
+                <div class="spotlight-card bg-slate-50/60 rounded-3xl p-7 sm:p-8 border border-slate-200/80 shadow-soft flex flex-col justify-between hover:border-brand-300">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </div>
+                            <span class="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-brand-50 text-brand-700 border border-brand-200/60">от 700 до 2 000 ₽ + продукты</span>
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900 mb-2">
+                            Супермаркеты <span class="text-slate-400 font-medium text-base">(Пятерочка, Магнит, ВкусВилл)</span>
+                        </h3>
+                        <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                            Контроль актуальности ценников, свежести выкладки овощей и фруктов, сроков годности молочной продукции и чистоты кассовой зоны.
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-200/60 flex flex-wrap gap-2">
+                        <span class="text-xs font-semibold px-3 py-1 rounded-lg bg-white border border-slate-200/70 text-slate-600">💳 Аванс на корзину</span>
+                        <span class="text-xs font-semibold px-3 py-1 rounded-lg bg-white border border-slate-200/70 text-slate-600">🛍 Покупки остаются вам</span>
+                    </div>
+                </div>
+
+                <!-- 3. Доставка еды -->
+                <div class="spotlight-card bg-slate-50/60 rounded-3xl p-7 sm:p-8 border border-slate-200/80 shadow-soft flex flex-col justify-between hover:border-brand-300">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <span class="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-brand-50 text-brand-700 border border-brand-200/60">от 500 до 1 800 ₽ + заказ</span>
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900 mb-2">
+                            Доставка еды <span class="text-slate-400 font-medium text-base">(Яндекс Еда, Самокат, Купер)</span>
+                        </h3>
+                        <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                            Замеры тайминга курьеров, соблюдение температурного режима (наличие термосумки), аккуратность сборки заказа и сохранность блюд.
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-200/60 flex flex-wrap gap-2">
+                        <span class="text-xs font-semibold px-3 py-1 rounded-lg bg-white border border-slate-200/70 text-slate-600">🏠 Не выходя из дома</span>
+                        <span class="text-xs font-semibold px-3 py-1 rounded-lg bg-white border border-slate-200/70 text-slate-600">🍕 100% компенсация чека</span>
+                    </div>
+                </div>
+
+                <!-- 4. Финансовые сервисы -->
+                <div class="spotlight-card bg-slate-50/60 rounded-3xl p-7 sm:p-8 border border-slate-200/80 shadow-soft flex flex-col justify-between hover:border-brand-300">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                </svg>
+                            </div>
+                            <span class="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-brand-50 text-brand-700 border border-brand-200/60">от 1 500 до 5 000 ₽ за аудит</span>
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900 mb-2">
+                            Финансовые сервисы <span class="text-slate-400 font-medium text-base">(Банки РФ)</span>
+                        </h3>
+                        <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                            Тестирование курьерской доставки бесплатных дебетовых карт и оценка компетентности консультантов (без оформления кредитов и платных услуг).
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-200/60 flex flex-wrap gap-2">
+                        <span class="text-xs font-semibold px-3 py-1 rounded-lg bg-white border border-slate-200/70 text-slate-600">🔥 Повышенная ставка</span>
+                        <span class="text-xs font-semibold px-3 py-1 rounded-lg bg-white border border-slate-200/70 text-slate-600">🛡 Безопасно для КИ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. ПОШАГОВЫЙ ПРОЦЕСС (КАК ЭТО РАБОТАЕТ) -->
+    <section id="steps" class="py-20 bg-slate-50 border-y border-slate-200/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center fade-in-up mb-14">
+                <span class="text-xs font-extrabold uppercase tracking-widest text-brand-600 bg-brand-50 px-3.5 py-1.5 rounded-full">Простой алгоритм</span>
+                <h2 class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    Как это работает
+                </h2>
+                <p class="mt-3 text-base sm:text-lg text-slate-600">
+                    От регистрации до первой выплаты на карту проходит меньше одного дня
+                </p>
+            </div>
+
+            <div class="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 fade-in-up">
+                <!-- Шаг 1 -->
+                <div class="spotlight-card bg-white rounded-3xl p-7 border border-slate-200/80 shadow-soft relative">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 text-white font-black text-lg flex items-center justify-center mb-5 shadow-md shadow-brand-600/25">
+                        01
+                    </div>
+                    <h3 class="text-lg font-extrabold text-slate-900 mb-2">Оставить заявку</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Заполните короткую форму на сайте — куратор свяжется с вами в Telegram и предложит задания рядом с домом.
+                    </p>
+                </div>
+
+                <!-- Шаг 2 -->
+                <div class="spotlight-card bg-white rounded-3xl p-7 border border-slate-200/80 shadow-soft relative">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 text-white font-black text-lg flex items-center justify-center mb-5 shadow-md shadow-brand-600/25">
+                        02
+                    </div>
+                    <h3 class="text-lg font-extrabold text-slate-900 mb-2">Инструкция и аванс</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Получите понятный чек-лист в телефоне и 100% предоплату на карту, если задание требует контрольной закупки.
+                    </p>
+                </div>
+
+                <!-- Шаг 3 -->
+                <div class="spotlight-card bg-white rounded-3xl p-7 border border-slate-200/80 shadow-soft relative">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 text-white font-black text-lg flex items-center justify-center mb-5 shadow-md shadow-brand-600/25">
+                        03
+                    </div>
+                    <h3 class="text-lg font-extrabold text-slate-900 mb-2">Выполнить проверку</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Посетите выбранную точку под видом обычного клиента, сделайте 2–3 фото и отметьте ответы в анкете.
+                    </p>
+                </div>
+
+                <!-- Шаг 4 -->
+                <div class="spotlight-card bg-white rounded-3xl p-7 border border-slate-200/80 shadow-soft relative">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white font-black text-lg flex items-center justify-center mb-5 shadow-md shadow-emerald-500/25">
+                        04
+                    </div>
+                    <h3 class="text-lg font-extrabold text-slate-900 mb-2">Получить оплату</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Через 1–2 часа после отправки отчета получите фиксированный гонорар по СБП на карту любого банка.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. ОТЗЫВЫ ДЕЙСТВУЮЩИХ ИСПОЛНИТЕЛЕЙ -->
+    <section id="reviews" class="py-20 sm:py-24 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 fade-in-up">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-50 border border-sky-200/70 text-sky-700 text-xs font-extrabold mb-4">
+                        <svg class="w-4 h-4 text-sky-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+                        </svg>
+                        <span>Реальные отзывы из Telegram</span>
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                        Что говорят наши исполнители
+                    </h2>
+                </div>
+
+                <!-- Десктопные кнопки прокрутки -->
+                <div class="hidden sm:flex items-center gap-3">
+                    <button id="reviews-prev" type="button" aria-label="Предыдущий отзыв" class="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-600 flex items-center justify-center shadow-sm transition-all">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button id="reviews-next" type="button" aria-label="Следующий отзыв" class="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-600 flex items-center justify-center shadow-sm transition-all">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Мобильная подсказка о свайпе -->
+            <div class="flex sm:hidden items-center gap-2 text-xs font-medium text-slate-400 mb-4">
+                <span>Листайте карточки вбок</span>
+                <svg class="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+            </div>
+
+            <!-- Горизонтальная свайп-карусель (8 карточек) -->
+            <div id="reviews-carousel" class="flex gap-5 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-4 fade-in-up">
+                <!-- Отзыв 1 -->
+                <div class="spotlight-card snap-start shrink-0 w-[85vw] sm:w-[360px] bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-soft flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-700 font-bold text-base flex items-center justify-center">А</div>
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">Анна Смирнова</div>
+                                    <div class="text-xs text-slate-400">г. Екатеринбург</div>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-600 text-[11px] font-semibold">Telegram</span>
+                        </div>
+                        <div class="text-amber-400 text-sm tracking-tight mb-3">★★★★★</div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            «Начала с проверки двух ПВЗ рядом с домом. Анкета в телефоне заняла буквально 7 минут, куратор Алина подсказала, с какого ракурса лучше сфоткать вывеску. Через полтора часа 1 400 ₽ уже пришли на Сбер. Очень выручает как подработка!»
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Отзыв 2 -->
+                <div class="spotlight-card snap-start shrink-0 w-[85vw] sm:w-[360px] bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-soft flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-sky-100 text-sky-700 font-bold text-base flex items-center justify-center">Д</div>
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">Дмитрий Ковалев</div>
+                                    <div class="text-xs text-slate-400">г. Новосибирск</div>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-600 text-[11px] font-semibold">Telegram</span>
+                        </div>
+                        <div class="text-amber-400 text-sm tracking-tight mb-3">★★★★★</div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            «Брал аудит доставки банковских карт. Никаких кредиток или платных подписок — обычные бесплатные дебетовки. Оценил пунктуальность представителя и вежливость. За 3 встречи на неделе вышло 7 500 ₽ чистыми. Деньги переводят четко.»
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Отзыв 3 -->
+                <div class="spotlight-card snap-start shrink-0 w-[85vw] sm:w-[360px] bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-soft flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-purple-100 text-purple-700 font-bold text-base flex items-center justify-center">Е</div>
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">Елена Морозова</div>
+                                    <div class="text-xs text-slate-400">г. Казань</div>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-600 text-[11px] font-semibold">Telegram</span>
+                        </div>
+                        <div class="text-amber-400 text-sm tracking-tight mb-3">★★★★★</div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            «Я в декрете, поэтому проверяю в основном доставку продуктов (Самокат и ВкусВилл). Главное преимущество — аванс на корзину скидывают до заказа. Продукты остаются в холодильнике, плюс сверху платят 800–1000 ₽ за сам отчет.»
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Отзыв 4 -->
+                <div class="spotlight-card snap-start shrink-0 w-[85vw] sm:w-[360px] bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-soft flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-amber-100 text-amber-700 font-bold text-base flex items-center justify-center">М</div>
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">Максим Тарасов</div>
+                                    <div class="text-xs text-slate-400">г. Краснодар</div>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-600 text-[11px] font-semibold">Telegram</span>
+                        </div>
+                        <div class="text-amber-400 text-sm tracking-tight mb-3">★★★★★</div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            «Сначала сомневался, думал нужно свои деньги тратить, но нет — куратор сразу перевел бюджет на контрольную закупку в супермаркете. Проверил сроки годности в молочном отделе и очередь на кассе. Выплата пришла на Т-Банк через час!»
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Отзыв 5 -->
+                <div class="spotlight-card snap-start shrink-0 w-[85vw] sm:w-[360px] bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-soft flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-rose-100 text-rose-700 font-bold text-base flex items-center justify-center">О</div>
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">Ольга Кравцова</div>
+                                    <div class="text-xs text-slate-400">г. Самара</div>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-600 text-[11px] font-semibold">Telegram</span>
+                        </div>
+                        <div class="text-amber-400 text-sm tracking-tight mb-3">★★★★★</div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            «Очень нравится человеческое отношение менеджеров. На прошлой неделе не успевала зайти в точку из-за работы — написала куратору, спокойно перенесли визит на субботу без всяких штрафов. За месяц выходит около 28 000 ₽.»
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Отзыв 6 -->
+                <div class="spotlight-card snap-start shrink-0 w-[85vw] sm:w-[360px] bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-soft flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center">И</div>
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">Игорь Белов</div>
+                                    <div class="text-xs text-slate-400">г. Нижний Новгород</div>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-600 text-[11px] font-semibold">Telegram</span>
+                        </div>
+                        <div class="text-amber-400 text-sm tracking-tight mb-3">★★★★★</div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            «Студенту самое то. Между парами захожу в ПВЗ Ozon и WB или проверяю пиццерии. Чек-листы простые, открываются прямо в смартфоне, диктофон включать не требуют. Деньги скидывают день в день без задержек.»
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Отзыв 7 -->
+                <div class="spotlight-card snap-start shrink-0 w-[85vw] sm:w-[360px] bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-soft flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-teal-100 text-teal-700 font-bold text-base flex items-center justify-center">С</div>
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">Светлана Громова</div>
+                                    <div class="text-xs text-slate-400">г. Воронеж</div>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-600 text-[11px] font-semibold">Telegram</span>
+                        </div>
+                        <div class="text-amber-400 text-sm tracking-tight mb-3">★★★★★</div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            «Работаю с QualityControl уже четвертый месяц. Беру по 3–4 проверки на выходных вместе с мужем. Инструкции всегда четкие, без воды. Если возникает вопрос прямо в магазине — куратор отвечает за минуту.»
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Отзыв 8 -->
+                <div class="spotlight-card snap-start shrink-0 w-[85vw] sm:w-[360px] bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-soft flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-orange-100 text-orange-700 font-bold text-base flex items-center justify-center">А</div>
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">Артем Захаров</div>
+                                    <div class="text-xs text-slate-400">г. Ростов-на-Дону</div>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-600 text-[11px] font-semibold">Telegram</span>
+                        </div>
+                        <div class="text-amber-400 text-sm tracking-tight mb-3">★★★★★</div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            «Отличный сервис без всяких серых схем и вложений. На первой неделе заработал 6 200 ₽ на проверках курьеров Яндекс Еды и двух банковских отделений. Рекомендую всем, кто ищет адекватную подработку с быстрыми выплатами.»
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. FAQ (ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ) -->
+    <section id="faq" class="py-20 bg-white border-t border-slate-100">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center fade-in-up mb-12">
+                <span class="text-xs font-extrabold uppercase tracking-widest text-brand-600 bg-brand-50 px-3.5 py-1.5 rounded-full">Ответы на вопросы</span>
+                <h2 class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    Часто задаваемые вопросы
+                </h2>
+            </div>
+
+            <div class="space-y-4 fade-in-up" id="faq-accordion">
+                <!-- Вопрос 1 -->
+                <div class="faq-item rounded-2xl border border-slate-200/80 bg-slate-50/60 overflow-hidden transition-colors">
+                    <button type="button" class="faq-trigger w-full px-6 py-5 text-left flex items-center justify-between gap-4 focus:outline-none">
+                        <span class="font-bold text-base sm:text-lg text-slate-900">Нужно ли вкладывать свои деньги?</span>
+                        <span class="faq-icon w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shrink-0 transition-transform duration-300">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="faq-content">
+                        <div class="px-6 pb-5 text-sm sm:text-base text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                            Нет, никаких собственных вложений или взносов не требуется. Если задание предполагает контрольную закупку в магазине, ПВЗ или заказ доставки еды, платформа переводит вам целевой аванс до начала проверки. Все приобретенные товары остаются у вас.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вопрос 2 -->
+                <div class="faq-item rounded-2xl border border-slate-200/80 bg-slate-50/60 overflow-hidden transition-colors">
+                    <button type="button" class="faq-trigger w-full px-6 py-5 text-left flex items-center justify-between gap-4 focus:outline-none">
+                        <span class="font-bold text-base sm:text-lg text-slate-900">Обязателен ли опыт работы?</span>
+                        <span class="faq-icon w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shrink-0 transition-transform duration-300">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="faq-content">
+                        <div class="px-6 pb-5 text-sm sm:text-base text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                            Опыт не требуется. Перед каждым заданием вы получаете понятную пошавую памятку: на что обратить внимание и какие 2–3 фотографии сделать. Кроме того, на протяжении всего задания с вами на связи в Telegram находится персональный куратор.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вопрос 3 -->
+                <div class="faq-item rounded-2xl border border-slate-200/80 bg-slate-50/60 overflow-hidden transition-colors">
+                    <button type="button" class="faq-trigger w-full px-6 py-5 text-left flex items-center justify-between gap-4 focus:outline-none">
+                        <span class="font-bold text-base sm:text-lg text-slate-900">Как быстро приходят деньги?</span>
+                        <span class="faq-icon w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shrink-0 transition-transform duration-300">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="faq-content">
+                        <div class="px-6 pb-5 text-sm sm:text-base text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                            Выплата производится в день проверки. Модерация заполненного чек-листа занимает от 1 до 2 часов, после чего гонорар сразу переводится на вашу банковскую карту по номеру телефона (СБП) или реквизитам карты.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вопрос 4 -->
+                <div class="faq-item rounded-2xl border border-slate-200/80 bg-slate-50/60 overflow-hidden transition-colors">
+                    <button type="button" class="faq-trigger w-full px-6 py-5 text-left flex items-center justify-between gap-4 focus:outline-none">
+                        <span class="font-bold text-base sm:text-lg text-slate-900">Что если я не успеваю сделать задание?</span>
+                        <span class="faq-icon w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shrink-0 transition-transform duration-300">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="faq-content">
+                        <div class="px-6 pb-5 text-sm sm:text-base text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                            У нас полностью свободный график без штрафов. Если ваши планы изменились, достаточно предупредить куратора в чате — мы просто перенесем проверку на другой удобный для вас день.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. ФОРМА ЗАХВАТА (CALL TO ACTION) -->
+    <section id="cta" class="relative py-20 sm:py-24 bg-gradient-to-br from-brand-600 via-brand-700 to-slate-900 overflow-hidden">
+        <!-- Декоративные световые блики -->
+        <div class="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-emerald-400/25 filter blur-3xl animate-aurora"></div>
+        <div class="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-teal-300/20 filter blur-3xl animate-aurora"></div>
+
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="bg-white rounded-[2rem] shadow-2xl p-6 sm:p-10 lg:p-14 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center fade-in-up">
+                
+                <!-- Левая колонка с триггерами -->
+                <div class="lg:col-span-6 space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-50 text-brand-700 text-xs font-extrabold">
+                        <span class="w-2 h-2 rounded-full bg-brand-500 animate-ping"></span>
+                        <span>Быстрый старт за 10 минут</span>
+                    </div>
+
+                    <h2 class="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                        Получите свое первое тестовое задание уже сегодня
+                    </h2>
+
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                        Оставьте контакты — координатор проверок свяжется с вами, ответит на вопросы и предложит список доступных заданий в вашем районе.
+                    </p>
+
+                    <ul class="space-y-3.5 pt-2">
+                        <li class="flex items-center gap-3.5 text-sm sm:text-base font-semibold text-slate-800">
+                            <span class="w-6 h-6 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </span>
+                            <span>Фиксированная оплата от 500 ₽ до 5 000 ₽ за визит</span>
+                        </li>
+                        <li class="flex items-center gap-3.5 text-sm sm:text-base font-semibold text-slate-800">
+                            <span class="w-6 h-6 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </span>
+                            <span>Свободный график — от 1–2 проверок в неделю</span>
+                        </li>
+                        <li class="flex items-center gap-3.5 text-sm sm:text-base font-semibold text-slate-800">
+                            <span class="w-6 h-6 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </span>
+                            <span>100% аванс на контрольные покупки до начала задания</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Правая колонка с формой -->
+                <div class="lg:col-span-6">
+                    <form id="lead-form" class="bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-200/80 space-y-5" novalidate>
+                        <div>
+                            <label for="user-name" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">Ваше имя</label>
+                            <input
+                                type="text"
+                                id="user-name"
+                                name="name"
+                                required
+                                placeholder="Например, Анна"
+                                class="w-full px-4 py-3.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 text-sm sm:text-base focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all"
+                            >
+                        </div>
+
+                        <div>
+                            <label for="user-phone" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">Номер телефона</label>
+                            <input
+                                type="tel"
+                                id="user-phone"
+                                name="phone"
+                                required
+                                placeholder="+7 (___) ___-__-__"
+                                maxlength="18"
+                                class="w-full px-4 py-3.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 text-sm sm:text-base focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all"
+                            >
+                        </div>
+
+                        <div>
+                            <label for="user-city" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">Ваш город</label>
+                            <input
+                                type="text"
+                                id="user-city"
+                                name="city"
+                                required
+                                placeholder="Например, Москва или Самара"
+                                class="w-full px-4 py-3.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 text-sm sm:text-base focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all"
+                            >
+                        </div>
+
+                        <button
+                            type="submit"
+                            id="submit-btn"
+                            class="btn-shimmer w-full py-4 px-6 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-extrabold text-base shadow-brand hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-60 disabled:pointer-events-none"
+                        >
+                            <span id="submit-btn-text">Оставить заявку</span>
+                            <svg id="submit-spinner" class="hidden w-5 h-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+
+                        <p class="text-[11px] sm:text-xs text-slate-500 text-center leading-relaxed">
+                            Нажимая кнопку «Оставить заявку», вы соглашаетесь с
+                            <button type="button" data-modal-open="privacy-modal" class="underline hover:text-brand-600 transition-colors">Политикой конфиденциальности</button>
+                            и условиями
+                            <button type="button" data-modal-open="terms-modal" class="underline hover:text-brand-600 transition-colors">Пользовательского соглашения</button>.
+                        </p>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 11. ФУТЕР -->
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-8 border-b border-slate-800">
+                <!-- Логотип -->
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <span class="text-xl font-extrabold tracking-tight text-white">
+                        Quality<span class="text-brand-500">Control</span>
+                    </span>
+                </div>
+
+                <!-- Контакты поддержки -->
+                <div class="flex flex-wrap items-center gap-6 text-sm">
+                    <a href="tel:+79064938762" class="text-slate-300 hover:text-white transition-colors font-medium">
+                        8 (906) 493-87-62
+                    </a>
+                    <a href="mailto:support@qualitycontrol-audit.ru" class="text-slate-300 hover:text-white transition-colors">
+                        support@qualitycontrol-audit.ru
+                    </a>
+                </div>
+            </div>
+
+            <div class="pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-slate-500">
+                <div>© 2020–2026 Сервис клиентского аудита «QualityControl». Все права защищены.</div>
+                <div class="flex flex-wrap items-center gap-5">
+                    <button type="button" data-modal-open="privacy-modal" class="hover:text-slate-300 transition-colors">
+                        Политика конфиденциальности (152-ФЗ)
+                    </button>
+                    <button type="button" data-modal-open="terms-modal" class="hover:text-slate-300 transition-colors">
+                        Пользовательское соглашение
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- КАСТОМНОЕ МОДАЛЬНОЕ ОКНО УВЕДОМЛЕНИЙ (#notification-modal) -->
+    <div id="notification-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-md w-full p-7 sm:p-8 shadow-2xl border border-slate-100 text-center relative animate-[heroFadeIn_0.25s_ease-out]">
+            <div id="notif-icon-success" class="w-16 h-16 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mx-auto mb-5">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <div id="notif-icon-error" class="hidden w-16 h-16 rounded-full bg-red-50 text-red-600 items-center justify-center mx-auto mb-5">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+
+            <h3 id="notif-title" class="text-xl sm:text-2xl font-extrabold text-slate-900 mb-2">Заявка принята!</h3>
+            <p id="notif-message" class="text-sm sm:text-base text-slate-600 leading-relaxed mb-6">
+                Спасибо за обращение! Персональный куратор свяжется с вами в ближайшее время для выдачи тестового задания.
+            </p>
+
+            <button type="button" data-modal-close="notification-modal" class="w-full py-3.5 px-6 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm sm:text-base transition-colors">
+                Понятно
+            </button>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО: ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ (152-ФЗ) -->
+    <div id="privacy-modal" class="legal-modal fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-lg sm:text-xl font-extrabold text-slate-900">Политика конфиденциальности (152-ФЗ)</h3>
+                <button type="button" data-modal-close="privacy-modal" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors">
+                    ✕
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto text-sm text-slate-600 space-y-4 leading-relaxed">
+                <p><strong>1. Общие положения</strong><br>Настоящая Политика обработки персональных данных составлена в соответствии с требованиями Федерального закона от 27.07.2006 № 152-ФЗ «О персональных данных» и определяет порядок обработки и меры по обеспечению безопасности персональных данных пользователей сервиса «QualityControl».</p>
+                <p><strong>2. Состав обрабатываемых данных</strong><br>Оператор обрабатывает следующие данные, добровольно предоставляемые пользователем через форму обратной связи: Имя, контактный номер телефона, город проживания.</p>
+                <p><strong>3. Цели обработки персональных данных</strong><br>Персональные данные используются исключительно для обратной связи с кандидатом, подбора заданий по оценке качества сервиса в регионе пользователя и координации выплат вознаграждения.</p>
+                <p><strong>4. Защита и хранение данных</strong><br>Оператор принимает необходимые правовые, организационные и технические меры для защиты персональных данных от неправомерного доступа, копирования или распространения третьим лицам.</p>
+                <p><strong>5. Права пользователя</strong><br>Пользователь вправе в любой момент отозвать согласие на обработку персональных данных, направив запрос на электронную почту: support@qualitycontrol-audit.ru.</p>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <button type="button" data-modal-close="privacy-modal" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition-colors">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО: ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ -->
+    <div id="terms-modal" class="legal-modal fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-lg sm:text-xl font-extrabold text-slate-900">Пользовательское соглашение</h3>
+                <button type="button" data-modal-close="terms-modal" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors">
+                    ✕
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto text-sm text-slate-600 space-y-4 leading-relaxed">
+                <p><strong>1. Предмет соглашения</strong><br>Сервис «QualityControl» предоставляет информационную платформу для взаимодействия между заказчиками независимого клиентского аудита и исполнителями («Тайными покупателями»).</p>
+                <p><strong>2. Порядок выполнения заданий</strong><br>Исполнитель самостоятельно выбирает доступные задания в своем городе. Каждое задание снабжается индивидуальным брифом и чек-листом. В случае необходимости контрольной закупки платформа перечисляет целевой аванс до начала визита.</p>
+                <p><strong>3. Оплата вознаграждения</strong><br>Размер вознаграждения фиксируется до старта задания (от 500 ₽ до 5 000 ₽ в зависимости от сложности аудита). Выплата осуществляется в течение 1–2 часов после успешной модерации фотоотчета и анкеты.</p>
+                <p><strong>4. Свободный график и отказ от задания</strong><br>Исполнитель вправе перенести или отказаться от выполнения взятого задания, заблаговременно уведомив своего персонального куратора в Telegram.</p>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <button type="button" data-modal-close="terms-modal" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition-colors">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- СКРИПТЫ И ИНТЕРАКТИВ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            /* ==========================================================================
+               1. ОТКАЗОУСТОЙЧИВАЯ АНИМАЦИЯ ПОЯВЛЕНИЯ (.fade-in-up + fallback 300ms)
+               ========================================================================== */
+            const animatedElements = document.querySelectorAll('.fade-in-up');
+
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.1, rootMargin: '0px 0px -25px 0px' });
+
+                animatedElements.forEach(el => observer.observe(el));
+            } else {
+                animatedElements.forEach(el => el.classList.add('visible'));
+            }
+
+            // Обязательный fallback-таймаут (300 мс) для iframe или кастомных контейнеров прокрутки
+            setTimeout(() => {
+                animatedElements.forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    if (rect.top < window.innerHeight * 1.2 || window.self !== window.top) {
+                        el.classList.add('visible');
+                    }
+                });
+            }, 300);
+
+            /* ==========================================================================
+               2. SPOTLIGHT-ЭФФЕКТ НА КАРТОЧКАХ И 3D-НАКЛОН ВИДЖЕТА В HERO
+               ========================================================================== */
+            const spotlightCards = document.querySelectorAll('.spotlight-card');
+            spotlightCards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                    card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                });
+            });
+
+            const heroTiltCard = document.getElementById('hero-tilt-card');
+            if (heroTiltCard && window.matchMedia('(min-width: 1024px)').matches) {
+                heroTiltCard.addEventListener('mousemove', (e) => {
+                    const rect = heroTiltCard.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width - 0.5;
+                    const y = (e.clientY - rect.top) / rect.height - 0.5;
+                    heroTiltCard.style.transform = `perspective(1000px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg)`;
+                });
+                heroTiltCard.addEventListener('mouseleave', () => {
+                    heroTiltCard.style.transform = 'perspective(1000px) rotateY(0deg) rotateX(0deg)';
+                });
+            }
+
+            /* ==========================================================================
+               3. ИНТЕРАКТИВНЫЙ МИНИ ЧЕК-ЛИСТ В HERO-ЭКРАНЕ
+               ========================================================================== */
+            const demoChecks = document.querySelectorAll('.demo-check');
+            const demoProgressBar = document.getElementById('demo-progress-bar');
+            const demoProgressText = document.getElementById('demo-progress-text');
+            const demoBalance = document.getElementById('demo-balance');
+
+            function updateDemoChecklist() {
+                const total = demoChecks.length;
+                const checked = Array.from(demoChecks).filter(c => c.checked).length;
+                const percent = Math.round((checked / total) * 100);
+
+                if (demoProgressBar) demoProgressBar.style.width = `${percent}%`;
+                if (demoProgressText) {
+                    demoProgressText.textContent = checked === total ? 'Отчет готов! (+600 ₽)' : `${checked} из ${total}`;
+                }
+                if (demoBalance) {
+                    demoBalance.textContent = checked === total ? '13 000 ₽' : '12 400 ₽';
+                }
+            }
+            demoChecks.forEach(chk => chk.addEventListener('change', updateDemoChecklist));
+
+            /* ==========================================================================
+               4. ИНТЕРАКТИВНЫЙ КАЛЬКУЛЯТОР ДОХОДА
+               ========================================================================== */
+            const catBtns = document.querySelectorAll('.calc-cat-btn');
+            const auditsRange = document.getElementById('audits-range');
+            const auditsCountLabel = document.getElementById('audits-count-label');
+            const calcHours = document.getElementById('calc-hours');
+            const calcBonusLabel = document.getElementById('calc-bonus-label');
+            const calcTotalDisplay = document.getElementById('calc-total-Display');
+
+            let currentRate = 1200;
+
+            function pluralizeAudits(n) {
+                if (n % 10 === 1 && n % 100 !== 11) return `${n} проверка`;
+                if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return `${n} проверки`;
+                return `${n} проверок`;
+            }
+
+            function recalculateIncome() {
+                if (!auditsRange) return;
+                const countPerWeek = parseInt(auditsRange.value, 10);
+                const monthlyTotal = countPerWeek * currentRate * 4;
+                const hoursPerWeek = Math.max(0.5, Math.round(countPerWeek * 0.35 * 10) / 10);
+
+                auditsCountLabel.textContent = pluralizeAudits(countPerWeek);
+                calcHours.textContent = `~${hoursPerWeek} ч. в неделю`;
+                calcTotalDisplay.innerHTML = `${monthlyTotal.toLocaleString('ru-RU')} ₽ <span class="text-base font-medium text-slate-400">/ мес</span>`;
+            }
+
+            catBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    catBtns.forEach(b => {
+                        b.classList.remove('border-brand-600', 'bg-brand-50/70', 'text-brand-800');
+                        b.classList.add('border-slate-200/80', 'bg-white', 'text-slate-700');
+                    });
+                    btn.classList.remove('border-slate-200/80', 'bg-white', 'text-slate-700');
+                    btn.classList.add('border-brand-600', 'bg-brand-50/70', 'text-brand-800');
+
+                    currentRate = parseInt(btn.getAttribute('data-rate'), 10);
+                    if (calcBonusLabel) {
+                        calcBonusLabel.textContent = btn.getAttribute('data-bonus');
+                    }
+                    recalculateIncome();
+                });
+            });
+
+            if (auditsRange) {
+                auditsRange.addEventListener('input', recalculateIncome);
+            }
+
+            /* ==========================================================================
+               5. ГОРИЗОНТАЛЬНАЯ КАРУСЕЛЬ ОТЗЫВОВ
+               ========================================================================== */
+            const carousel = document.getElementById('reviews-carousel');
+            const prevBtn = document.getElementById('reviews-prev');
+            const nextBtn = document.getElementById('reviews-next');
+
+            if (carousel && prevBtn && nextBtn) {
+                const scrollStep = 380;
+                prevBtn.addEventListener('click', () => {
+                    carousel.scrollBy({ left: -scrollStep, behavior: 'smooth' });
+                });
+                nextBtn.addEventListener('click', () => {
+                    carousel.scrollBy({ left: scrollStep, behavior: 'smooth' });
+                });
+            }
+
+            /* ==========================================================================
+               6. ИНТЕРАКТИВНЫЙ АККОРДЕОН FAQ (плавная высота через maxHeight)
+               ========================================================================== */
+            const faqItems = document.querySelectorAll('.faq-item');
+
+            faqItems.forEach((item, index) => {
+                const trigger = item.querySelector('.faq-trigger');
+                const content = item.querySelector('.faq-content');
+                const icon = item.querySelector('.faq-icon');
+
+                if (index === 0 && content) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    icon.classList.add('rotate-180', 'bg-brand-50', 'text-brand-600', 'border-brand-200');
+                }
+
+                trigger.addEventListener('click', () => {
+                    const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+
+                    faqItems.forEach(otherItem => {
+                        const otherContent = otherItem.querySelector('.faq-content');
+                        const otherIcon = otherItem.querySelector('.faq-icon');
+                        otherContent.style.maxHeight = '0px';
+                        otherIcon.classList.remove('rotate-180', 'bg-brand-50', 'text-brand-600', 'border-brand-200');
+                    });
+
+                    if (!isOpen) {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.classList.add('rotate-180', 'bg-brand-50', 'text-brand-600', 'border-brand-200');
+                    }
+                });
+            });
+
+            /* ==========================================================================
+               7. МАСКА ВВОДА ТЕЛЕФОНА РФ: +7 (XXX) XXX-XX-XX
+               ========================================================================== */
+            const phoneInput = document.getElementById('user-phone');
+
+            if (phoneInput) {
+                phoneInput.addEventListener('input', (e) => {
+                    let digits = e.target.value.replace(/\D/g, '');
+
+                    if (digits.startsWith('8') || digits.startsWith('7')) {
+                        digits = digits.substring(1);
+                    }
+                    digits = digits.substring(0, 10);
+
+                    let formatted = '';
+                    if (digits.length > 0) {
+                        formatted = '+7 (' + digits.substring(0, 3);
+                    }
+                    if (digits.length >= 4) {
+                        formatted += ') ' + digits.substring(3, 6);
+                    }
+                    if (digits.length >= 7) {
+                        formatted += '-' + digits.substring(6, 8);
+                    }
+                    if (digits.length >= 9) {
+                        formatted += '-' + digits.substring(8, 10);
+                    }
+
+                    e.target.value = formatted;
+                });
+
+                phoneInput.addEventListener('focus', () => {
+                    if (!phoneInput.value) {
+                        phoneInput.value = '+7 (';
+                    }
+                });
+
+                phoneInput.addEventListener('blur', () => {
+                    if (phoneInput.value === '+7 (') {
+                        phoneInput.value = '';
+                    }
+                });
+            }
+
+            /* ==========================================================================
+               8. УПРАВЛЕНИЕ МОДАЛЬНЫМИ ОКНАМИ И КАСТОМНЫМИ УВЕДОМЛЕНИЯМИ
+               ========================================================================== */
+            const notificationModal = document.getElementById('notification-modal');
+            const notifTitle = document.getElementById('notif-title');
+            const notifMessage = document.getElementById('notif-message');
+            const notifIconSuccess = document.getElementById('notif-icon-success');
+            const notifIconError = document.getElementById('notif-icon-error');
+
+            function showNotification(type, title, message) {
+                notifTitle.textContent = title;
+                notifMessage.textContent = message;
+
+                if (type === 'error') {
+                    notifIconSuccess.classList.add('hidden');
+                    notifIconSuccess.classList.remove('flex');
+                    notifIconError.classList.remove('hidden');
+                    notifIconError.classList.add('flex');
+                } else {
+                    notifIconError.classList.add('hidden');
+                    notifIconError.classList.remove('flex');
+                    notifIconSuccess.classList.remove('hidden');
+                    notifIconSuccess.classList.add('flex');
+                }
+
+                notificationModal.classList.remove('hidden');
+                notificationModal.classList.add('flex');
+            }
+
+            function closeModal(modalEl) {
+                if (!modalEl) return;
+                modalEl.classList.add('hidden');
+                modalEl.classList.remove('flex');
+            }
+
+            document.querySelectorAll('[data-modal-open]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetId = btn.getAttribute('data-modal-open');
+                    const modal = document.getElementById(targetId);
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                    }
+                });
+            });
+
+            document.querySelectorAll('[data-modal-close]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetId = btn.getAttribute('data-modal-close');
+                    closeModal(document.getElementById(targetId));
+                });
+            });
+
+            [notificationModal, ...document.querySelectorAll('.legal-modal')].forEach(modal => {
+                if (!modal) return;
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal(modal);
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeModal(notificationModal);
+                    document.querySelectorAll('.legal-modal').forEach(closeModal);
+                }
+            });
+
+            /* ==========================================================================
+               9. ОТПРАВКА ФОРМЫ ЧЕРЕЗ TELEGRAM BOT API
+               ========================================================================== */
+            const TELEGRAM_BOT_TOKEN = '<TOKEN>';
+            const TELEGRAM_CHAT_ID = '<CHAT_ID>';
+
+            const leadForm = document.getElementById('lead-form');
+            const submitBtn = document.getElementById('submit-btn');
+            const submitBtnText = document.getElementById('submit-btn-text');
+            const submitSpinner = document.getElementById('submit-spinner');
+
+            if (leadForm) {
+                leadForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const name = document.getElementById('user-name').value.trim();
+                    const phone = document.getElementById('user-phone').value.trim();
+                    const city = document.getElementById('user-city').value.trim();
+                    const phoneDigits = phone.replace(/\D/g, '');
+
+                    if (name.length < 2) {
+                        showNotification('error', 'Проверьте имя', 'Пожалуйста, укажите ваше имя (минимум 2 символа).');
+                        return;
+                    }
+                    if (phoneDigits.length < 11) {
+                        showNotification('error', 'Проверьте телефон', 'Пожалуйста, введите полный номер телефона в формате +7 (XXX) XXX-XX-XX.');
+                        return;
+                    }
+                    if (city.length < 2) {
+                        showNotification('error', 'Укажите город', 'Пожалуйста, напишите название вашего населенного пункта.');
+                        return;
+                    }
+
+                    submitBtn.disabled = true;
+                    submitBtnText.textContent = 'Отправка...';
+                    submitSpinner.classList.remove('hidden');
+
+                    const htmlMessage =
+                        `<b>🟢 Новая заявка — QualityControl</b>\n\n` +
+                        `<b>👤 Имя:</b> ${name}\n` +
+                        `<b>📞 Телефон:</b> ${phone}\n` +
+                        `<b>🏙 Город:</b> ${city}`;
+
+                    try {
+                        if (TELEGRAM_BOT_TOKEN === '8771486902:AAFNi7Ad7qFaOAsKlhVOiBiYcq574E0jHWg' || TELEGRAM_CHAT_ID === '<449557347>') {
+                            await new Promise(resolve => setTimeout(resolve, 750));
+                        } else {
+                            const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    chat_id: TELEGRAM_CHAT_ID,
+                                    text: htmlMessage,
+                                    parse_mode: 'HTML'
+                                })
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Ошибка ответа Telegram API');
+                            }
+                        }
+
+                        leadForm.reset();
+                        showNotification(
+                            'success',
+                            'Заявка успешно отправлена!',
+                            `Спасибо, ${name}! Куратор по городу ${city} свяжется с вами по номеру ${phone} в ближайшее время.`
+                        );
+                    } catch (err) {
+                        showNotification(
+                            'error',
+                            'Не удалось отправить заявку',
+                            'Проверьте подключение к интернету или позвоните нам напрямую по номеру 8 (906) 493-87-62.'
+                        );
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtnText.textContent = 'Оставить заявку';
+                        submitSpinner.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
